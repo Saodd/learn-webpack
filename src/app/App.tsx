@@ -1,6 +1,5 @@
 import * as React from "react";
 import axios from "axios";
-import P1 from "../assets/1.png"
 
 
 export class App extends React.Component<any, any> {
@@ -8,7 +7,6 @@ export class App extends React.Component<any, any> {
         return <div>
             <p>Hello, Lewin!</p>
             <MyButton/>
-            <a href={P1} download>下载图片</a>
         </div>
     }
 }

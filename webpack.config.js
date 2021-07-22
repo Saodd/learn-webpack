@@ -6,13 +6,14 @@ module.exports = {
         index: './src/index.tsx',
     },
     output: {
-        filename:  '[name].[contenthash].js',
+        filename: '[name].[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
         clean: true,
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: "Webpack App of Lewin"
+            title: "Webpack App of Lewin",
+            template: "./src/index.html",
         })
     ],
     mode: "production",
@@ -21,17 +22,17 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/,
-                use: ['style-loader','css-loader']
+                use: ['style-loader', 'css-loader']
             },
             {
-                test:/\.(png|svg|jpg|jpeg|gif)$/i,
+                test: /\.(png|svg|jpg|jpeg|gif)$/i,
                 type: "asset/resource",
             },
             {
                 test: /\.(js|jsx|ts|tsx)$/,
                 exclude: /(node_modules|bower_components)/,
                 loader: "babel-loader",
-                options: { presets: ["@babel/env", "@babel/preset-react","@babel/preset-typescript"] }
+                options: {presets: ["@babel/env", "@babel/preset-react", "@babel/preset-typescript"]}
             },
         ]
     },
@@ -48,5 +49,10 @@ module.exports = {
                 },
             },
         },
+    },
+    externals: {
+        "axios": "axios",
+        "react": "React",
+        "react-dom": "ReactDOM",
     }
 };
