@@ -13,7 +13,7 @@ export class App extends React.Component<any, any> {
 function MyButton() {
     const handleClick = React.useCallback(() => {
         for (let i = 0; i < 20; i++) {
-            throttledApiCall({}).then(console.log)
+            throttledApiCall({i}).then(console.log)
         }
     }, [])
     return <button onClick={handleClick}>点击我！</button>
@@ -21,27 +21,35 @@ function MyButton() {
 
 
 async function apiCall(params: any): Promise<any> {
-    console.log("HTTP 请求……")
-    await new Promise(r => setTimeout(r, 200))
+    console.log("HTTP 请求……", params)
+    await new Promise(r => setTimeout(r, 1000))
     if (Math.random() < 0.2) throw '随机报错'
     return {data: "123"}
 }
 
 let queue: (() => void)[] = []
+let count = 0
+const countLimit = 3
 
 function throttledApiCall(params: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-        queue.push(() => {  // 1. 将任务闭包推入队列。
+        const task = () => {
             apiCall(params)
                 .then(resolve)
                 .catch(reject)
                 .finally(() => {
-                    queue.shift()
-                    // 2. 任务完成后，要触发下一个任务。
-                    if (queue.length) queue[0]()
+                    if (queue.length) {
+                        queue.shift()()
+                    } else {
+                        count--
+                    }
                 })
-        })
-        // 如果队列只有1个任务，额外触发一次
-        if (queue.length === 1) queue[0]()
+        }
+        if (count < countLimit) {
+            count++
+            task()
+        } else {
+            queue.push(task)
+        }
     })
 }
