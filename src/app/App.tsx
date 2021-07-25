@@ -1,5 +1,4 @@
 import * as React from "react";
-import axios from "axios";
 
 
 export class App extends React.Component<any, any> {
@@ -11,22 +10,38 @@ export class App extends React.Component<any, any> {
     }
 }
 
-// 当图片跨域时，在a标签中指定download属性无效，chrome依然会在新窗口中打开图片而不是下载。
 function MyButton() {
     const handleClick = React.useCallback(() => {
-        axios({
-            url: "https://img.alicdn.com/bao/uploaded/i4/696944147/O1CN01AiO6Ao1gVNA1UpjFa_!!696944147.png_70x70.jpg",
-            responseType: 'blob'  // 必须指定类型，否则会以字符串返回
-        }).then(resp => {
-            const data: Blob = resp.data  // 可选，便于类型提示
-
-            // 模拟点击下载事件
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(data);
-            link.download = 'lewin-20210624.png';
-            link.click();
-            window.URL.revokeObjectURL(link.href);
-        })
+        for (let i = 0; i < 20; i++) {
+            throttledApiCall({}).then(console.log)
+        }
     }, [])
     return <button onClick={handleClick}>点击我！</button>
+}
+
+
+async function apiCall(params: any): Promise<any> {
+    console.log("HTTP 请求……")
+    await new Promise(r => setTimeout(r, 200))
+    if (Math.random() < 0.2) throw '随机报错'
+    return {data: "123"}
+}
+
+let queue: (() => void)[] = []
+
+function throttledApiCall(params: any): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        queue.push(() => {  // 1. 将任务闭包推入队列。
+            apiCall(params)
+                .then(resolve)
+                .catch(reject)
+                .finally(() => {
+                    queue.shift()
+                    // 2. 任务完成后，要触发下一个任务。
+                    if (queue.length) queue[0]()
+                })
+        })
+        // 如果队列只有1个任务，额外触发一次
+        if (queue.length === 1) queue[0]()
+    })
 }
